@@ -110,7 +110,7 @@ class SS_IMAP extends DataObject
         
         // Implement fromlength and subjectlength
         $headers->fetchfrom = substr(implode(", ", $headers->from), 0, $fromlength ? $fromlength : strlen(implode(" ", $headers->from)));
-        $headers->fetchsubject = substr((string) $headers->Subject, 0, $subjectlength ? $subjectlength : (string) $headers->Subject);
+        $headers->fetchsubject = substr((string) $headers->Subject, 0, $subjectlength ? $subjectlength : strlen((string) $headers->Subject));
         
         return $headers;
     }
