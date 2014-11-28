@@ -53,7 +53,7 @@ class SS_IMAP extends DataObject
         if (function_exists($imapFunction))
         {
             // Ensure the first element is the imap resource if defined
-            if ($arguments && count($arguments) > 0 && @get_resource_type($arguments[0]) == "imap" && $this->imap)
+            if ($arguments && count($arguments) > 0 && @get_resource_type($arguments[0]) != "imap" && $this->imap)
             {
                 array_unshift($arguments, $this->imap);
             }
