@@ -15,7 +15,7 @@ class SS_IMAP extends DataObject
      *
      * @var Resource $imap IMAP connection resource
      */
-    private $imap;
+    protected $imap;
     
     /**
      * Standard imap functions can be called as part of this class object
@@ -44,7 +44,7 @@ class SS_IMAP extends DataObject
             // Ensure the imap resource is not supplied for internal functions
             if ($arguments && count($arguments) > 0 && @get_resource_type($arguments[0]) == "imap")
             {
-                array_shift($arguments);
+                $this->imap = array_shift($arguments);
             }
             return call_user_func_array(array($this, $imapFunction), $arguments);
         }
@@ -53,8 +53,12 @@ class SS_IMAP extends DataObject
         if (function_exists($imapFunction))
         {
             // Ensure the first element is the imap resource if defined
-            if ($arguments && count($arguments) > 0 && @get_resource_type($arguments[0]) != "imap" && $this->imap)
+            if ((!$arguments || count($arguments) < 1 || @get_resource_type($arguments[0]) != "imap") && $this->imap)
             {
+                if (!$arguments)
+                {
+                    $arguments = array();
+                }
                 array_unshift($arguments, $this->imap);
             }
             return call_user_func_array($imapFunction, $arguments);
@@ -82,7 +86,7 @@ class SS_IMAP extends DataObject
         }
         
         $output = '';
-        $array = imap_mime_header_decode($headers->$attribute);
+        $array = $this->mime_header_decode($headers->$attribute);
 
         foreach ($array as $obj)
         {
@@ -109,8 +113,8 @@ class SS_IMAP extends DataObject
         $headers = imap_rfc822_parse_headers($this->fetchheader($message_id), $defaulthost);
         
         // Implement fromlength and subjectlength
-        $headers->fetchfrom = substr(implode(", ", $headers->from), 0, $fromlength ? $fromlength : strlen(implode(" ", $headers->from)));
-        $headers->fetchsubject = substr((string) $headers->Subject, 0, $subjectlength ? $subjectlength : strlen((string) $headers->Subject));
+        $headers->fetchfrom = substr(implode(", ", $headers->from), 0, $fromlength ? $fromlength : strlen(implode(", ", $headers->from)));
+        $headers->fetchsubject = substr($this->getHeader("Subject", $headers), 0, $subjectlength ? $subjectlength : strlen($this->getHeader("Subject", $headers)));
         
         return $headers;
     }
